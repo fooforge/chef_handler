@@ -26,3 +26,13 @@ chef_handler "Chef::Handler::JsonFile" do
   arguments :path => '/var/chef/reports'
   action :nothing
 end.run_action(:enable)
+
+cron "Archive old chef-run reports" do
+  minute "0"
+  hour "1"
+  day "1"
+
+  command "find /var/chef/reports/ -name chef-run-report-`date -d '1 month ago' +\"%Y%m\"`*.json -type f | xargs tar -cjpf /var/chef/reports/reports-`date -d '1 month ago' +\"%Y%m\"`.tbz2 2>&1 /dev/null"
+
+  only_if{File.directory?("/var/chef/reports")}
+end
